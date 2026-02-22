@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+/// カテゴリー（アプリを分類するマスタテーブル）
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   // 表示名 (例: "メモ・ドキュメント")
+  slug      String   @unique // URL用 (例: "note-taking")
+  iconName  String?  @map("icon_name") // lucide-reactのアイコン名
+  createdAt DateTime @default(now()) @map("created_at")
+
+  apps App[]
+
+  @@map("categories")
+}
+
+/// アプリ本体マスタ（世の中に存在するアプリ/ツールの基本情報）
+model App {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   // 例: "Notion", "Evernote"
+  slug        String   @unique // URL用 (例: "notion")
+  description String   // アプリの概要説明
+  url         String?  // 公式サイトURL
+  categoryId  String   @map("category_id") @db.Uuid
+  isJpSupport Boolean  @default(false) @map("is_jp_support") // 日本語対応
+  hasFreePlan Boolean  @default(false) @map("has_free_plan") // 無料プランあり
+  pricingType String?  @map("pricing_type") // "フリーミアム", "買い切り", "完全無料"
+  platforms   String[] // 対応OS配列 ['Web', 'Mac', 'iOS']
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  category            Category      @relation(fields: [categoryId], references: [id])
+  targetAlternatives  Alternative[] @relation("TargetApp")  // このアプリの代替一覧
+  altAlternatives     Alternative[] @relation("AltApp")     // このアプリが代替として登録されている一覧
+
+  @@map("apps")
+}
+
+/// 代替関係と投票スコア（「Aの代わりにBが使える」という関係性を管理する交差テーブル）
+model Alternative {
+  id          String   @id @default(uuid()) @db.Uuid
+  targetAppId String   @map("target_app_id") @db.Uuid // 元アプリ (例: Evernote)
+  altAppId    String   @map("alt_app_id") @db.Uuid    // 代替アプリ (例: Notion)
+  upvotes     Int      @default(0) // ユーザーからの累積投票数
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  targetApp App      @relation("TargetApp", fields: [targetAppId], references: [id])
+  altApp    App      @relation("AltApp", fields: [altAppId], references: [id])
+  votesLog  VoteLog[]
+
+  @@unique([targetAppId, altAppId])
+  @@map("alternatives")
+}
+
+/// 投票履歴・不正防止用ログ
+model VoteLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  alternativeId    String   @map("alternative_id") @db.Uuid
+  clientIdentifier String   @map("client_identifier") // IPハッシュやセッションIDなど
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  alternative Alternative @relation(fields: [alternativeId], references: [id])
+
+  @@map("votes_log")
+}
