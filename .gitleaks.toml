@@ -1,0 +1,88 @@
+title = "Oruto - Secret Leak Detection"
+
+# Gitleaks デフォルトルールセットを継承（AWS, GCP, GitHub PAT, JWT 等を網羅）
+[extend]
+useDefault = true
+
+# ───────────────────────────────────────────────
+# Supabase 固有ルール
+# ───────────────────────────────────────────────
+
+[[rules]]
+description = "Supabase Service Role Key（絶対に公開してはいけない管理者権限のJWT）"
+id = "supabase-service-role-key"
+# Supabase の JWT は eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 から始まる
+regex = '''(?i)service.?role['":\s=]+eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'''
+tags = ["supabase", "jwt", "critical"]
+
+[[rules]]
+description = "Supabase Anon/Publishable Key（コードへのハードコード禁止）"
+id = "supabase-anon-key"
+regex = '''(?i)(anon.?key|publishable.?key)['":\s=]+eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'''
+tags = ["supabase", "jwt"]
+
+[[rules]]
+description = "Supabase プロジェクト URL（接続先情報の漏洩防止）"
+id = "supabase-project-url"
+# https://xxxxxxxxxxxxxxxxxxxx.supabase.co 形式
+regex = '''https://[a-z]{20,}\.supabase\.co'''
+tags = ["supabase", "url"]
+# ただし supabase.co を使った公式ドキュメントURLは許可
+[rules.allowlist]
+regexTarget = "line"
+regexes = [
+  '''supabase\.com/docs''',
+  '''supabase\.com/blog''',
+  '''placeholder\.supabase\.co''',
+]
+
+# ───────────────────────────────────────────────
+# データベース接続文字列
+# ───────────────────────────────────────────────
+
+[[rules]]
+description = "PostgreSQL 接続文字列（パスワードを含む）"
+id = "postgres-connection-url-with-password"
+# postgres://user:password@host 形式（password が 1文字以上）
+regex = '''postgres(?:ql)?://[^:@\s"'`]+:[^@\s"'`]+@[^/\s"'`]+'''
+tags = ["database", "postgres", "credentials"]
+[rules.allowlist]
+regexTarget = "match"
+regexes = [
+  # CI 用ダミー接続文字列は許可
+  '''postgresql://ci:ci@localhost''',
+  '''postgres://user:password@localhost''',
+  # ドキュメント例として使われる形式
+  '''postgres://username:password@''',
+]
+
+# ───────────────────────────────────────────────
+# 汎用シークレットパターン
+# ───────────────────────────────────────────────
+
+[[rules]]
+description = "環境変数への直接代入（ハードコードされたシークレット）"
+id = "hardcoded-env-secret"
+# SECRET_KEY = "実際の値" 形式
+regex = '''(?i)(secret[_-]?key|api[_-]?secret|auth[_-]?token|private[_-]?key)\s*[=:]\s*['"][A-Za-z0-9+/]{20,}['"]'''
+tags = ["api-key", "generic"]
+
+# ───────────────────────────────────────────────
+# グローバル許可リスト（誤検知を防ぐ）
+# ───────────────────────────────────────────────
+
+[allowlist]
+description = "CI/CD プレースホルダー・テスト用ダミー値・設定ファイルのコメント"
+
+# 許可するファイルパス
+paths = [
+  # .env.example はキーのテンプレートのみ（値なし）なので許可
+  '''.env.example''',
+  # ロックファイルは対象外
+  '''package-lock.json''',
+  '''yarn.lock''',
+  '''pnpm-lock.yaml''',
+]
+
+# 許可するコミットハッシュ（誤検知が判明したコミットをここに列挙）
+commits = []

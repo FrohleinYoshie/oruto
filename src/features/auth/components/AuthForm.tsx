@@ -20,59 +20,67 @@ export function AuthForm({
   const error = searchParams.get("error");
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md space-y-8">
-        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-          {title}
-        </h2>
+    <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
 
         {error && (
-          <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
+          <p className="mt-3 text-sm text-red-500" role="alert">
             {error}
-          </div>
+          </p>
         )}
 
-        <form className="mt-8 space-y-6" action={action}>
-          <div className="space-y-4">
+        <form action={action} className="mt-6 flex flex-col gap-4">
+          <div>
+            <label htmlFor="email" className="sr-only">
+              メールアドレス
+            </label>
             <input
+              id="email"
               name="email"
               type="email"
               autoComplete="email"
               required
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="メールアドレス"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-sky-500"
             />
+          </div>
+          <div>
+            <label htmlFor="password" className="sr-only">
+              パスワード
+            </label>
             <input
+              id="password"
               name="password"
               type="password"
               autoComplete={isLogin ? "current-password" : "new-password"}
               required
               minLength={6}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="パスワード"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-sky-500"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 cursor-pointer"
+            className="w-full bg-sky-500 text-white rounded-lg px-4 py-2 hover:bg-sky-600"
           >
             {buttonText}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="mt-6 text-sm text-gray-500">
           {isLogin ? (
             <>
               アカウントをお持ちでない方は{" "}
-              <Link href="/signup" className="text-indigo-600 hover:underline">
+              <Link href="/signup" className="text-sky-500 hover:text-sky-600">
                 登録
               </Link>
             </>
           ) : (
             <>
               既にアカウントをお持ちの方は{" "}
-              <Link href="/login" className="text-indigo-600 hover:underline">
+              <Link href="/login" className="text-sky-500 hover:text-sky-600">
                 ログイン
               </Link>
             </>

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -36,9 +36,7 @@ export async function signup(formData: FormData) {
 
   if (error) {
     console.error("Signup error:", error.message, error.status);
-    redirect(
-      "/signup?error=" + encodeURIComponent(error.message)
-    );
+    redirect("/signup?error=" + encodeURIComponent("登録に失敗しました。"));
   }
 
   revalidatePath("/", "layout");
@@ -47,7 +45,10 @@ export async function signup(formData: FormData) {
 
 export async function signout() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    console.error("SignoutError:", error.message, error.status);
+  }
 
   revalidatePath("/", "layout");
   redirect("/");

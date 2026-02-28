@@ -1,0 +1,170 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# 同じ ref への複数の実行をキャンセルし、最新のみ実行する
+# （PRへの連続プッシュで無駄なCI実行を防ぐ）
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# 最小権限の原則: 読み取りのみ許可
+permissions:
+  contents: read
+
+jobs:
+  # ──────────────────────────────────────────────
+  # JOB 0: シークレット漏洩スキャン（最優先・他ジョブと並列）
+  # APIキー・DB接続文字列・JWTトークンの誤コミットを検出する
+  # git 全履歴をスキャンするため fetch-depth: 0 が必要
+  # ──────────────────────────────────────────────
+  secret-scan:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 全コミット履歴をスキャン（過去の誤コミットも検出）
+          fetch-depth: 0
+
+      - name: Gitleaks をインストール
+        run: |
+          GITLEAKS_VERSION="8.21.2"
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          sudo mv gitleaks /usr/local/bin/gitleaks
+
+      - name: シークレット漏洩スキャンを実行
+        run: |
+          gitleaks detect \
+            --config .gitleaks.toml \
+            --source . \
+            --verbose \
+            --report-format sarif \
+            --report-path gitleaks-report.sarif
+
+      # 検出結果は失敗時のみアップロード（アーティファクトで詳細確認可能）
+      - name: スキャンレポートをアップロード
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.sarif
+          retention-days: 7
+
+  # ──────────────────────────────────────────────
+  # JOB 1: Lint & TypeScript 型チェック
+  # 最も高速なフィードバックを提供する品質ゲート
+  # ──────────────────────────────────────────────
+  quality:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 依存パッケージをインストール
+        run: npm ci
+
+      # TypeScript の型生成が必要（schema.prisma からの型生成）
+      # prisma generate は DB 接続不要でスキーマファイルを読むだけ
+      - name: Prisma クライアントを生成
+        run: npx prisma generate
+        env:
+          POSTGRES_URL_NON_POOLING: postgresql://ci:ci@localhost:5432/ci
+
+      - name: ESLint を実行
+        run: npm run lint
+
+      - name: TypeScript 型チェック
+        run: npx tsc --noEmit
+
+  # ──────────────────────────────────────────────
+  # JOB 2: 単体テスト・統合テスト（Vitest）
+  # quality と並列実行し、フィードバックを高速化する
+  # ──────────────────────────────────────────────
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 依存パッケージをインストール
+        run: npm ci
+
+      - name: Prisma クライアントを生成
+        run: npx prisma generate
+        env:
+          POSTGRES_URL_NON_POOLING: postgresql://ci:ci@localhost:5432/ci
+
+      # カバレッジレポートを生成（v8 プロバイダー使用）
+      - name: テストを実行（カバレッジ付き）
+        run: npm run test:coverage
+
+      # テストが失敗した場合でもレポートをアップロードする
+      - name: カバレッジレポートをアップロード
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────
+  # JOB 3: Next.js ビルド確認
+  # quality + test 両方が通った後にのみ実行
+  # ビルドキャッシュで高速化
+  # ──────────────────────────────────────────────
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: [secret-scan, quality, test]
+    env:
+      # CI ビルドチェック用プレースホルダー
+      # next build は動的ページ（cookies使用）をビルド時に実行しないため、
+      # 実際の DB/Supabase 接続は不要
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key-for-ci-build-check
+      POSTGRES_PRISMA_URL: postgresql://ci:ci@localhost:5432/ci
+      POSTGRES_URL_NON_POOLING: postgresql://ci:ci@localhost:5432/ci
+      # テレメトリーを無効化（CI 環境でのノイズ削減）
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # Next.js ビルドキャッシュ（.next/cache）を復元・保存
+      # ソースコードと依存関係の変更を検知してキャッシュを無効化
+      - name: Next.js ビルドキャッシュを復元
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
+      - name: 依存パッケージをインストール
+        run: npm ci
+
+      # npm run build = prisma generate && next build
+      - name: ビルド（Prisma 型生成 + Next.js ビルド）
+        run: npm run build

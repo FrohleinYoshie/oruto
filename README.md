@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Oruto
 
-## Getting Started
+あのツールの代わり、みんな何使ってる？
 
-First, run the development server:
+ユーザー投票ベースのアプリ代替ツールデータベース。アフィリエイトに左右されない、リアルな声で代替ツールを探せるサービス。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## プロジェクト概要
+
+Oruto は「このアプリの代わりに何を使っている？」というユーザーの疑問に、コミュニティの投票で答えるサービスです。アフィリエイト報酬に影響されない、純粋なユーザーの声をもとにアプリの代替ツールを見つけることができます。
+
+## 技術スタック
+
+### フロントエンド
+
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS v4
+
+### バックエンド / DB
+
+- Supabase (Auth + PostgreSQL)
+- Prisma ORM
+
+### インフラ
+
+- Docker (Node 20 Alpine)
+
+## セットアップ
+
+### 前提条件
+
+- Docker / Docker Compose
+- Supabase プロジェクト（認証・DB用）
+
+### 環境変数
+
+`.env.example` を `.env` にコピーし、以下を設定：
+
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+POSTGRES_HOST=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_PRISMA_URL=
+POSTGRES_URL_NON_POOLING=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Docker で起動
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+docker compose up
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+開発サーバーが `http://localhost:3000` で起動します。
 
-## Learn More
+## npm スクリプト
 
-To learn more about Next.js, take a look at the following resources:
+| コマンド | 説明 |
+|---------|------|
+| `npm run dev` | 開発サーバー起動 |
+| `npm run build` | プロダクションビルド（Prisma 型生成含む） |
+| `npm run lint` | ESLint 実行 |
+| `npm run db:generate` | Prisma クライアント生成 |
+| `npm run db:migrate` | DB マイグレーション作成・適用 |
+| `npm run db:push` | スキーマを DB に反映 |
+| `npm run db:studio` | Prisma Studio（DB GUI）起動 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ドキュメント
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [アーキテクチャ](docs/architecture.md)
+- [データベース設計](docs/database.md)
+- [認証](docs/auth.md)
+- [UI デザイントークン](docs/ui-design-tokens.md)
+- [ロードマップ](docs/roadmap.md)
 
-## Deploy on Vercel
+## ライセンス
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+未定

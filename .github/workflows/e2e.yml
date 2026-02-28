@@ -1,0 +1,78 @@
+name: E2E Tests
+
+on:
+  # main へのマージ後に実行（PR をブロックしない）
+  push:
+    branches: [main]
+  # 手動実行（任意のブランチで E2E を走らせたい場合）
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "テスト対象のベース URL（デフォルト: http://localhost:3000）"
+        required: false
+        default: "http://localhost:3000"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      # E2E は実際の Supabase テスト用プロジェクトに接続する
+      # GitHub Secrets に以下を設定すること:
+      #   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+      #   POSTGRES_PRISMA_URL, POSTGRES_URL_NON_POOLING
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      POSTGRES_PRISMA_URL: ${{ secrets.POSTGRES_PRISMA_URL }}
+      POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
+      NEXT_TELEMETRY_DISABLED: "1"
+      PLAYWRIGHT_BASE_URL: ${{ inputs.base_url || 'http://localhost:3000' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 依存パッケージをインストール
+        run: npm ci
+
+      # Chromium のみインストール（CI では最小限に留める）
+      - name: Playwright ブラウザをインストール
+        run: npx playwright install --with-deps chromium
+
+      - name: Prisma クライアントを生成
+        run: npx prisma generate
+
+      # E2E は dev サーバーを playwright.config.ts の webServer で自動起動する
+      - name: E2E テストを実行
+        run: npm run e2e
+
+      # テスト失敗時でもレポートをアップロードする（デバッグ用）
+      - name: Playwright レポートをアップロード
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      # 失敗テストのスクリーンショットをアップロード
+      - name: 失敗テストのスクリーンショットをアップロード
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-screenshots
+          path: test-results/
+          retention-days: 7

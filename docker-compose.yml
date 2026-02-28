@@ -9,6 +9,7 @@ services:
       - .:/app
       - /app/node_modules
       - /app/.next
+      - /app/src/generated
     environment:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true

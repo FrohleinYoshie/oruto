@@ -7,7 +7,7 @@ export default function SearchInput() {
   const [query, setQuery] = useState("");
   const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmed = query.trim();
     if (trimmed) {
@@ -17,16 +17,20 @@ export default function SearchInput() {
 
   return (
     <form onSubmit={handleSubmit} className="flex w-full max-w-lg gap-2">
+      <label htmlFor="search-input" className="sr-only">
+        アプリ名を検索
+      </label>
       <input
+        id="search-input"
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="アプリ名を入力（例: Evernote）"
-        className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+        className="flex-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-sky-500"
       />
       <button
         type="submit"
-        className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 cursor-pointer"
+        className="bg-sky-500 text-white rounded-lg px-4 py-2 hover:bg-sky-600"
       >
         検索
       </button>

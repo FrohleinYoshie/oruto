@@ -11,7 +11,6 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
-  engine: "classic",
   datasource: {
     // CLIによるマイグレーション・スキーマ操作はdirect接続（PgBouncer非経由）を使う
     url: process.env.POSTGRES_URL_NON_POOLING ?? "",
