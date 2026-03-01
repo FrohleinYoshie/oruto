@@ -10,7 +10,10 @@ services:
       - /app/node_modules
       - /app/.next
       - /app/src/generated
+    env_file:
+      - .env.local
     environment:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
     restart: unless-stopped
