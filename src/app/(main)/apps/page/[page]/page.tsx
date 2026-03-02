@@ -15,15 +15,6 @@ export const revalidate = 300
 
 const LIMIT = 10
 
-export async function generateStaticParams() {
-    const apps = await AppsData()
-    const totalPages = Math.ceil(apps.length / LIMIT)
-    // ページ1は /apps が担当するので2ページ目以降を生成
-    return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => ({
-        page: String(i + 2),
-    }))
-}
-
 export default async function AppsPage({ params }: Props) {
     const { page } = await params
     const pageNum = Number(page)
