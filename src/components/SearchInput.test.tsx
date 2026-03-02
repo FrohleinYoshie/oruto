@@ -37,7 +37,7 @@ describe("SearchInput", () => {
       render(<SearchInput />);
 
       expect(
-        screen.getByPlaceholderText("アプリ名を入力（例: Evernote）")
+        screen.getByPlaceholderText("アプリ名を入力（例: Evernote、Figma）")
       ).toBeInTheDocument();
     });
 
