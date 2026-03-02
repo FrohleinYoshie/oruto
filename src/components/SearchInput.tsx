@@ -25,12 +25,12 @@ export default function SearchInput() {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="アプリ名を入力（例: Evernote）"
-        className="flex-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-sky-500"
+        placeholder="アプリ名を入力（例: Evernote、Figma）"
+        className="flex-1 border border-gray-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:border-sky-500 transition-colors"
       />
       <button
         type="submit"
-        className="bg-sky-500 text-white rounded-lg px-4 py-2 hover:bg-sky-600"
+        className="bg-sky-500 text-white rounded-lg px-6 py-3 hover:bg-sky-600 transition-colors shrink-0"
       >
         検索
       </button>

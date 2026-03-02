@@ -2,8 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import SearchInput from "@/components/SearchInput";
 import Link from "next/link";
 import CategoryList from "@/features/app/components/CategoryList";
+import { CategoriesData } from "@/features/app/factory/CategoryData";
 
 export default async function Home() {
+  const categories = await CategoriesData();
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -11,32 +14,43 @@ export default async function Home() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <section className="flex flex-col items-center text-center pt-16 md:pt-24">
-        <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
+      {/* ヒーローセクション */}
+      <section className="flex flex-col items-center text-center pt-16 md:pt-24 pb-4">
+        <h1 className="text-2xl md:text-4xl font-bold text-gray-900 leading-relaxed">
           あのツールの代わり、みんな何使ってる？
         </h1>
-        <p className="mt-4 text-gray-500 max-w-lg">
-          オルトは、ユーザー投票だけで順位が決まる代替ツール検索データベースです。
+        <p className="mt-4 text-gray-500 max-w-lg leading-relaxed">
+          コミュニティが選ぶ、広告なしのアプリ代替データベース。
           アフィリエイトによる順位操作は一切ありません。
         </p>
-        <SearchInput />
+        <div className="mt-8 w-full flex justify-center">
+          <SearchInput />
+        </div>
       </section>
 
-      {/**カテゴリーソートセクション */}
+      {/* カテゴリーセクション */}
       <section className="mt-12">
-        <h3 className="text-xl font-bold text-gray-900">カテゴリーから探す</h3>
-        <CategoryList />
+        <h2 className="text-xl font-bold text-gray-900">カテゴリーから探す</h2>
+        <CategoryList categories={categories} />
       </section>
 
+      {/* 未ログイン時の登録CTA */}
       {!user && (
-        <section className="mt-6">
-          <p className="text-gray-500">
-            投票するには{" "}
-            <Link href="/signup" className="text-sky-500 hover:text-sky-600">
-              アカウント登録（無料）
+        <section className="mt-12 mb-8 text-center">
+          <div className="border border-gray-200 rounded-lg px-6 py-8">
+            <p className="text-gray-900 font-medium">
+              投票に参加して、みんなのツール選びを手助けしよう
+            </p>
+            <p className="mt-2 text-sm text-gray-500">
+              アカウント登録は無料です
+            </p>
+            <Link
+              href="/signup"
+              className="mt-4 inline-block bg-sky-500 text-white rounded-lg px-6 py-2 hover:bg-sky-600 transition-colors"
+            >
+              無料で登録する
             </Link>
-            が必要です
-          </p>
+          </div>
         </section>
       )}
     </div>

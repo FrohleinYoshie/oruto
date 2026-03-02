@@ -1,14 +1,10 @@
-export default async function CategorySlugPage({
-  params,
-}: {
+import DetailCategory from "@/features/app/components/slug/DetailCategory";
+
+interface Props {
   params: Promise<{ slug: string }>;
-}) {
+}
+
+export default async function CategorySlugPage({ params }: Props) {
   const { slug } = await params;
-  return (
-    <>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{slug}</h1>
-      </div>
-    </>
-  );
+  return <DetailCategory slug={slug} />;
 }

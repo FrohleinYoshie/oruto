@@ -1,9 +1,30 @@
-export default function CategoriesPage() {
-    return (
-        <>
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">カテゴリ一覧</h1>
-        </div>
-        </>
-    )
+import Link from "next/link";
+import { AllCategoriesData } from "@/features/app/factory/CategoryData";
+
+export default async function CategoriesPage() {
+  const categories = await AllCategoriesData();
+
+  return (
+    <>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">カテゴリー</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {categories.map((category) => (
+          <Link
+            key={category.id}
+            href={`/categories/${category.slug}`}
+            className="border border-gray-200 rounded-lg px-4 py-3 hover:bg-sky-50 hover:border-sky-200 transition-colors"
+          >
+            <span className="text-sm font-medium text-gray-900">
+              {category.name}
+            </span>
+          </Link>
+        ))}
+      </div>
+      {categories.length === 0 && (
+        <p className="py-8 text-center text-gray-500">
+          カテゴリーがまだ登録されていません。
+        </p>
+      )}
+    </>
+  );
 }
