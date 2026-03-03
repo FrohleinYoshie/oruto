@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import SearchInput from "@/components/SearchInput";
 import Link from "next/link";
+import ContentWrapper from "@/components/ContentWrapper";
 import CategoryList from "@/features/app/components/CategoryList";
 import { CategoriesData } from "@/features/app/factory/CategoryData";
 
@@ -13,7 +14,7 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <ContentWrapper>
       {/* ヒーローセクション */}
       <section className="flex flex-col items-center text-center pt-16 md:pt-24 pb-4">
         <h1 className="text-2xl md:text-4xl font-bold text-gray-900 leading-relaxed">
@@ -53,6 +54,6 @@ export default async function Home() {
           </div>
         </section>
       )}
-    </div>
+    </ContentWrapper>
   );
 }

@@ -5,6 +5,7 @@
 import { AppsData, AppsCount } from "@/features/app/factory/AppsData"
 import AppsList from "@/features/app/components/apps/AppsList"
 import PageNation from "@/components/PageNation"
+import ContentWrapper from "@/components/ContentWrapper"
 import { redirect } from "next/navigation"
 import { notFound } from "next/navigation"
 
@@ -36,10 +37,10 @@ export default async function AppsPage({ params }: Props) {
     ])
 
     return (
-        <>
+        <ContentWrapper className="py-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">アプリ一覧</h1>
             <AppsList apps={apps} />
             <PageNation numApps={totalCount} limit={LIMIT} currentPage={pageNum} baseUrl="apps/page/" firstPageUrl="/apps" />
-        </>
+        </ContentWrapper>
     )
 }
