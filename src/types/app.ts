@@ -3,7 +3,7 @@ export interface AppDTO {
     name: string;
     slug: string;
     description: string;
-    url: string;
+    url: string | null;
     categoryId: string;
     isJpSupport: boolean;
     hasFreePlan: boolean;

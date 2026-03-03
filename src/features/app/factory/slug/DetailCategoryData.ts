@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma"
+import { toCategoryWithAppsDTO } from "../../utils/transform";
 
 export async function DetailCategoryData(slug: string) {
-        const category = await prisma.category.findUnique({
+    const category = await prisma.category.findUnique({
         where: { slug },
         include: {
             apps: {
@@ -9,5 +10,8 @@ export async function DetailCategoryData(slug: string) {
             }
         }
     })
-    return category;
+    if (!category) {
+        return null;
+    }
+    return toCategoryWithAppsDTO(category);
 }

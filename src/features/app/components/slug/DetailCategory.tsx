@@ -1,27 +1,11 @@
 import Link from "next/link";
-import { DetailCategoryData } from "@/features/app/factory/slug/DetailCategoryData";
+import type { CategoryWithAppsDTO } from "@/types";
 
 interface Props {
-  slug: string;
+  category: CategoryWithAppsDTO;
 }
 
-export default async function DetailCategory({ slug }: Props) {
-  const category = await DetailCategoryData(slug);
-
-  if (!category) {
-    return (
-      <div className="py-12 text-center">
-        <p className="text-gray-500">カテゴリーが見つかりませんでした。</p>
-        <Link
-          href="/categories"
-          className="mt-4 inline-block text-sky-500 hover:text-sky-600 text-sm"
-        >
-          カテゴリー一覧に戻る
-        </Link>
-      </div>
-    );
-  }
-
+export default function DetailCategory({ category }: Props) {
   return (
     <>
       {/* カテゴリタイトル */}

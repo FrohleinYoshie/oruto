@@ -1,2 +1,2 @@
-export type { CategoryDTO } from "./category";
+export type { CategoryDTO, CategoryWithAppsDTO } from "./category";
 export type { AppDTO } from "./app";

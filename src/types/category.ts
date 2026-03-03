@@ -5,3 +5,8 @@ export interface CategoryDTO {
   slug: string;
   iconName: string | null;
 }
+
+/** カテゴリー + 所属アプリのDTO */
+export interface CategoryWithAppsDTO extends CategoryDTO {
+  apps: import("./app").AppDTO[];
+}
