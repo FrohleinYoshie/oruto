@@ -13,9 +13,19 @@ export default async function Header() {
   return (
     <header className="border-b border-gray-200 px-4 sm:px-6 lg:px-8">
       <ContentWrapper className="flex h-14 items-center justify-between">
-        <Link href="/" className="text-lg font-bold text-sky-500">
-          オルト
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="text-lg font-bold text-sky-500">
+            オルト
+          </Link>
+          <div className="flex items-center gap-4 text-sm">
+            <Link href="/categories" className="text-gray-700 hover:text-sky-500 transition-colors">
+              カテゴリー
+            </Link>
+            <Link href="/apps" className="text-gray-700 hover:text-sky-500 transition-colors">
+              アプリ一覧
+            </Link>
+          </div>
+        </div>
         <nav aria-label="メインナビゲーション">
           {user ? (
             <form action={signout}>

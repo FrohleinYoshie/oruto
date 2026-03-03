@@ -1,9 +1,5 @@
 // ページネーションコンポーネント
-// 引数のデータ数に応じてページネーションを表示する
-// 第一引数は親がデータの数をlenthで数えたもの、第2引数は1ページあたりの表示数、第3引数は現在のページ番号
-// ページネーションの表示は左から「1」「現在のページ-1」「現在ページ」「現在のページ+1」「最後のページ」
-// 最初のページの場合「1」は表示しない。　最後のページの場合「最後のページ」は表示しない。現在のページを表示中は表示はするが入力不可
-// リンクは「hogehoge/?page/(現在ページ)」のようにする。しかし、現在のページが1の場合は「hogehoge」と「hogehoge/?page/1」は同様なものとする。
+// 前へ/次へ + ページ番号のUI
 import { notFound } from "next/navigation"
 import Link from "next/link"
 
@@ -17,17 +13,26 @@ interface Props {
 
 export default function PageNation({ numApps, limit, currentPage, baseUrl, firstPageUrl }: Props) {
     const page1Url = firstPageUrl ?? `/${baseUrl}1`
+    const totalPages = Math.ceil(numApps / limit)
 
-    const totalPages: number = Math.ceil(numApps / limit)
+    // 1ページ以下なら表示しない
+    if (totalPages <= 1) {
+        return null
+    }
 
     // 範囲外のページは404
     if (currentPage < 1 || currentPage > totalPages) {
         return notFound()
     }
 
-    const range: number = 2
-    let start: number = Math.max(1, currentPage - range)
-    let end: number = Math.min(totalPages, currentPage + range)
+    function pageUrl(page: number) {
+        return page === 1 ? page1Url : `/${baseUrl}${page}`
+    }
+
+    // 表示するページ番号の範囲を計算
+    const range = 2
+    let start = Math.max(1, currentPage - range)
+    let end = Math.min(totalPages, currentPage + range)
 
     if (currentPage <= range + 1) {
         end = Math.min(totalPages, 1 + range * 2)
@@ -40,35 +45,68 @@ export default function PageNation({ numApps, limit, currentPage, baseUrl, first
         visiblePages.push(i)
     }
 
+    const baseStyle = "flex items-center justify-center min-w-[44px] h-11 rounded-lg text-sm transition-colors"
+    const activeStyle = `${baseStyle} bg-sky-500 text-white font-medium`
+    const inactiveStyle = `${baseStyle} border border-gray-200 text-gray-700 hover:bg-gray-50`
+    const disabledStyle = `${baseStyle} text-gray-300 cursor-default`
+
     return (
-        <div className="flex gap-2">
-            {/* 最初のページへのリンク */}
-            {visiblePages[0] > 1 && (
-                <>
-                    <Link href={page1Url}>1</Link>
-                    {visiblePages[0] > 2 && <span>...</span>}
-                </>
-            )}
+        <nav aria-label="ページネーション" className="mt-8 flex justify-center">
+            <div className="flex items-center gap-1">
+                {/* 前へ */}
+                {currentPage > 1 ? (
+                    <Link href={pageUrl(currentPage - 1)} className={inactiveStyle} aria-label="前のページ">
+                        &lt;
+                    </Link>
+                ) : (
+                    <span className={disabledStyle} aria-hidden="true">&lt;</span>
+                )}
 
-            {/* 周辺のページ番号 */}
-            {visiblePages.map((page) => (
-                <Link
-                    key={page}
-                    href={page === 1 ? page1Url : `/${baseUrl}${page}`}
-                    className={page === currentPage ? 'font-bold text-sky-500' : ''}
-                    aria-current={page === currentPage ? 'page' : undefined}
-                >
-                    {page}
-                </Link>
-            ))}
+                {/* 最初のページ */}
+                {visiblePages[0] > 1 && (
+                    <>
+                        <Link href={page1Url} className={inactiveStyle}>1</Link>
+                        {visiblePages[0] > 2 && (
+                            <span className="flex items-center justify-center min-w-[44px] h-11 text-gray-400 text-sm">...</span>
+                        )}
+                    </>
+                )}
 
-            {/* 最後のページへのリンク */}
-            {visiblePages[visiblePages.length - 1] < totalPages && (
-                <>
-                    {visiblePages[visiblePages.length - 1] < totalPages - 1 && <span>...</span>}
-                    <Link href={`/${baseUrl}${totalPages}`}>{totalPages}</Link>
-                </>
-            )}
-        </div>
+                {/* ページ番号 */}
+                {/* モバイル: ±1、sm以上: ±2 */}
+                {visiblePages.map((page) => {
+                    const distance = Math.abs(page - currentPage)
+                    // 現在ページから2離れているものはモバイルで非表示
+                    const responsiveClass = distance >= 2 ? "hidden sm:flex" : ""
+
+                    return page === currentPage ? (
+                        <span key={page} className={activeStyle} aria-current="page">{page}</span>
+                    ) : (
+                        <Link key={page} href={pageUrl(page)} className={`${inactiveStyle} ${responsiveClass}`}>
+                            {page}
+                        </Link>
+                    )
+                })}
+
+                {/* 最後のページ */}
+                {visiblePages[visiblePages.length - 1] < totalPages && (
+                    <>
+                        {visiblePages[visiblePages.length - 1] < totalPages - 1 && (
+                            <span className="flex items-center justify-center min-w-[44px] h-11 text-gray-400 text-sm">...</span>
+                        )}
+                        <Link href={pageUrl(totalPages)} className={inactiveStyle}>{totalPages}</Link>
+                    </>
+                )}
+
+                {/* 次へ */}
+                {currentPage < totalPages ? (
+                    <Link href={pageUrl(currentPage + 1)} className={inactiveStyle} aria-label="次のページ">
+                        &gt;
+                    </Link>
+                ) : (
+                    <span className={disabledStyle} aria-hidden="true">&gt;</span>
+                )}
+            </div>
+        </nav>
     )
 }
