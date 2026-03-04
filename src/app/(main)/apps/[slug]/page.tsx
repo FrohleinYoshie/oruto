@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { headers } from "next/headers"
 
@@ -73,9 +74,19 @@ export default async function Page({ params }: Props) {
 
             {/* 代替アプリ一覧 */}
             <section className="mt-8">
-                <h2 className="text-lg font-bold text-gray-900 mb-4">
-                    {app.name} の代替アプリ
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-gray-900">
+                        {app.name} の代替アプリ
+                    </h2>
+                    {user && (
+                        <Link
+                            href={`/post/alternative?target=${slug}`}
+                            className="text-sm text-sky-500 hover:text-sky-600 transition-colors"
+                        >
+                            + 代替アプリを提案する
+                        </Link>
+                    )}
+                </div>
                 <AlternativesList
                     alternatives={alternatives}
                     isLoggedIn={!!user}

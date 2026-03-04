@@ -28,14 +28,22 @@ export default async function Header() {
         </div>
         <nav aria-label="メインナビゲーション">
           {user ? (
-            <form action={signout}>
-              <button
-                type="submit"
-                className="text-gray-500 hover:text-gray-900 text-sm transition-colors"
-              >
-                ログアウト
-              </button>
-            </form>
+            <div className="flex items-center gap-4 text-sm">
+              <Link href="/post" className="text-gray-700 hover:text-sky-500 transition-colors">
+                アプリ登録
+              </Link>
+              <Link href="/post/alternative" className="text-gray-700 hover:text-sky-500 transition-colors">
+                代替提案
+              </Link>
+              <form action={signout}>
+                <button
+                  type="submit"
+                  className="text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  ログアウト
+                </button>
+              </form>
+            </div>
           ) : (
             <div className="flex items-center gap-4">
               <Link href="/login" className="text-gray-900 hover:text-sky-500">

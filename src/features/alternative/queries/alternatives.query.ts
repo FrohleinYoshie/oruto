@@ -15,7 +15,7 @@ export async function AlternativesWithCommentsData(targetAppSlug: string) {
         include: {
             altApp: true,
             comments: {
-                orderBy: { upvotes: "desc" },
+                orderBy: { createdAt: "desc" },
             },
         },
         orderBy: { upvotes: "desc" },
