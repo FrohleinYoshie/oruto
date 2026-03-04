@@ -50,9 +50,10 @@ model Alternative {
   upvotes     Int      @default(0) // ユーザーからの累積投票数
   createdAt   DateTime @default(now()) @map("created_at")
 
-  targetApp App      @relation("TargetApp", fields: [targetAppId], references: [id])
-  altApp    App      @relation("AltApp", fields: [altAppId], references: [id])
+  targetApp App                  @relation("TargetApp", fields: [targetAppId], references: [id])
+  altApp    App                  @relation("AltApp", fields: [altAppId], references: [id])
   votesLog  VoteLog[]
+  comments  AlternativeComment[]
 
   @@unique([targetAppId, altAppId])
   @@map("alternatives")
@@ -68,4 +69,31 @@ model VoteLog {
   alternative Alternative @relation(fields: [alternativeId], references: [id])
 
   @@map("votes_log")
+}
+
+/// 代替関係に対するユーザーの理由コメント
+model AlternativeComment {
+  id            String   @id @default(uuid()) @db.Uuid
+  alternativeId String   @map("alternative_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid // ログイン必須
+  body          String                             // コメント本文
+  upvotes       Int      @default(0)               // いいね数（非正規化）
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  alternative Alternative        @relation(fields: [alternativeId], references: [id])
+  voteLogs    CommentVoteLog[]
+
+  @@map("alternative_comments")
+}
+
+/// コメントいいねの不正防止ログ
+model CommentVoteLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  commentId        String   @map("comment_id") @db.Uuid
+  clientIdentifier String   @map("client_identifier")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  comment AlternativeComment @relation(fields: [commentId], references: [id])
+
+  @@map("comment_votes_log")
 }

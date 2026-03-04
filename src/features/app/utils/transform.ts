@@ -1,6 +1,8 @@
 import type { Category, App } from "@/generated/prisma/client";
 import type { CategoryDTO, CategoryWithAppsDTO } from "@/types";
-import type { AppDTO } from "@/types/app"
+import type { AppDTO } from "@/types/app";
+import type { AlternativeDTO } from "@/types/alternatives";
+import type { AlternativeCommentDTO } from "@/types/comment";
 
 /** Prisma Category → CategoryDTO に変換 */
 export function toCategoryDTO(category: Category): CategoryDTO {
@@ -37,4 +39,45 @@ export function toAppDTO(app: App): AppDTO {
     platforms: app.platforms,
     createdAt: app.createdAt,
   }
+}
+
+// コメントのPrisma型
+type PrismaComment = {
+  id: string;
+  alternativeId: string;
+  userId: string;
+  body: string;
+  upvotes: number;
+  createdAt: Date;
+};
+
+/** Prisma AlternativeComment → AlternativeCommentDTO に変換 */
+export function toAlternativeCommentDTO(comment: PrismaComment): AlternativeCommentDTO {
+  return {
+    id: comment.id,
+    alternativeId: comment.alternativeId,
+    userId: comment.userId,
+    body: comment.body,
+    upvotes: comment.upvotes,
+    createdAt: comment.createdAt,
+  };
+}
+
+/** Prisma Alternative（altApp, comments含む） → AlternativeDTO に変換 */
+export function toAlternativeDTO(alternative: {
+  id: string;
+  targetAppId: string;
+  upvotes: number;
+  createdAt: Date;
+  altApp: App;
+  comments: PrismaComment[];
+}): AlternativeDTO {
+  return {
+    id: alternative.id,
+    targetAppId: alternative.targetAppId,
+    altApp: toAppDTO(alternative.altApp),
+    upvotes: alternative.upvotes,
+    comments: alternative.comments.map(toAlternativeCommentDTO),
+    createdAt: alternative.createdAt,
+  };
 }
