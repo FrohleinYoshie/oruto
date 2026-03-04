@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation"
 import { headers } from "next/headers"
 
-import { DetailAppsData } from "@/features/app/factory/slug/DetailAppsData"
-import { AlternativesWithCommentsData, VotedIdsData } from "@/features/app/factory/slug/AlternativesWithCommentsData"
-import AlternativesList from "@/features/app/components/slug/AlternativesList"
-import ContentWrapper from "@/components/ContentWrapper"
+import { ToolDetailData } from "@/features/tool/queries/tool-detail.query"
+import { AlternativesWithCommentsData, VotedIdsData } from "@/features/alternative/queries/alternatives.query"
+import AlternativesList from "@/features/alternative/components/AlternativesList"
+import ContentWrapper from "@/components/layout/ContentWrapper"
 import { createClient } from "@/lib/supabase/server"
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 
 export default async function Page({ params }: Props) {
     const { slug } = await params
-    const app = await DetailAppsData(slug)
+    const app = await ToolDetailData(slug)
 
     if (!app) {
         notFound()
@@ -31,7 +31,7 @@ export default async function Page({ params }: Props) {
     const clientIdentifier = forwarded?.split(",")[0]?.trim() ?? "unknown"
 
     const alternativeIds = alternatives.map((a) => a.id)
-    const commentIds = alternatives.flatMap((a) => a.comments.map((c) => c.id))
+    const commentIds = alternatives.flatMap((a) => a.comments.map((c: { id: string }) => c.id))
 
     const { votedAlternativeIds, votedCommentIds } = await VotedIdsData(
         alternativeIds,

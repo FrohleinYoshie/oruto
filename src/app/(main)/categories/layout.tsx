@@ -1,6 +1,6 @@
-import { AllCategoriesData } from "@/features/app/factory/CategoryData";
-import CategoryTableContents from "@/components/CategoryTableContents";
-import ContentWrapper from "@/components/ContentWrapper";
+import { AllCategoriesData } from "@/features/category/queries/categories.query";
+import CategorySidebar from "@/components/CategorySidebar";
+import ContentWrapper from "@/components/layout/ContentWrapper";
 
 export default async function CategoriesLayout({
     children,
@@ -15,7 +15,7 @@ export default async function CategoriesLayout({
                 {/* サイドバー: カテゴリー一覧（デスクトップのみ表示） */}
                 <aside className="hidden lg:block w-56 shrink-0">
                     <div className="sticky top-16">
-                        <CategoryTableContents categories={categories} />
+                        <CategorySidebar categories={categories} />
                     </div>
                 </aside>
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import DetailCategory from "@/features/app/components/slug/DetailCategory";
-import { DetailCategoryData } from "@/features/app/factory/slug/DetailCategoryData";
+import CategoryDetail from "@/features/category/components/CategoryDetail";
+import { CategoryDetailData } from "@/features/category/queries/category-detail.query";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -8,7 +8,7 @@ interface Props {
 
 export default async function CategorySlugPage({ params }: Props) {
   const { slug } = await params;
-  const category = await DetailCategoryData(slug);
+  const category = await CategoryDetailData(slug);
 
   if (!category) {
     return (
@@ -24,5 +24,5 @@ export default async function CategorySlugPage({ params }: Props) {
     );
   }
 
-  return <DetailCategory category={category} />;
+  return <CategoryDetail category={category} />;
 }

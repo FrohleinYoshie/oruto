@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import SearchInput from "@/components/SearchInput";
+import SearchInput from "@/features/search/components/SearchInput";
 import Link from "next/link";
-import ContentWrapper from "@/components/ContentWrapper";
-import CategoryList from "@/features/app/components/CategoryList";
-import { CategoriesData } from "@/features/app/factory/CategoryData";
+import ContentWrapper from "@/components/layout/ContentWrapper";
+import CategoryList from "@/features/category/components/CategoryList";
+import { CategoriesData } from "@/features/category/queries/categories.query";
 
 export default async function Home() {
   const categories = await CategoriesData();

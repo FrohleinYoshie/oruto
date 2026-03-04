@@ -1,5 +1,5 @@
 import Link from "next/link";
-import ContentWrapper from "@/components/ContentWrapper";
+import ContentWrapper from "@/components/layout/ContentWrapper";
 
 export default function Footer() {
   return (

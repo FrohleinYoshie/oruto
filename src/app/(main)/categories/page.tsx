@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AllCategoriesData } from "@/features/app/factory/CategoryData";
+import { AllCategoriesData } from "@/features/category/queries/categories.query";
 
 export default async function CategoriesPage() {
   const categories = await AllCategoriesData();
