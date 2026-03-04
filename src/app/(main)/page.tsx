@@ -35,6 +35,12 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* カテゴリーセクション */}
+      <section className="mt-12">
+        <h2 className="text-xl font-bold text-gray-900">カテゴリーから探す</h2>
+        <CategoryList categories={categories} />
+      </section>
+
       {/* 人気の代替関係 */}
       {trending.length > 0 && (
         <section className="mt-12">
@@ -108,12 +114,6 @@ export default async function Home() {
           </div>
         </section>
       )}
-
-      {/* カテゴリーセクション */}
-      <section className="mt-12">
-        <h2 className="text-xl font-bold text-gray-900">カテゴリーから探す</h2>
-        <CategoryList categories={categories} />
-      </section>
 
       {/* 未ログイン時の登録CTA */}
       {!user && (
