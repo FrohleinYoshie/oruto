@@ -4,11 +4,17 @@ import Link from "next/link";
 import ContentWrapper from "@/components/layout/ContentWrapper";
 import CategoryList from "@/features/category/components/CategoryList";
 import { CategoriesData } from "@/features/category/queries/categories.query";
+import { TrendingAlternativesData } from "@/features/alternative/queries/trending.query";
+import { RecentToolsData } from "@/features/tool/queries/recent-tools.query";
 
 export default async function Home() {
-  const categories = await CategoriesData();
+  const [categories, trending, recentApps, supabase] = await Promise.all([
+    CategoriesData(),
+    TrendingAlternativesData(5),
+    RecentToolsData(6),
+    createClient(),
+  ]);
 
-  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -28,6 +34,80 @@ export default async function Home() {
           <SearchInput />
         </div>
       </section>
+
+      {/* 人気の代替関係 */}
+      {trending.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            みんなが注目している乗り換え先
+          </h2>
+          <div className="space-y-3">
+            {trending.map((alt) => (
+              <Link
+                key={alt.id}
+                href={`/apps/${alt.targetApp.slug}`}
+                className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 hover:bg-sky-50 transition-colors"
+              >
+                <div className="flex items-center gap-2 text-sm min-w-0">
+                  <span className="font-medium text-gray-900 truncate">
+                    {alt.targetApp.name}
+                  </span>
+                  <span className="text-gray-400 shrink-0">→</span>
+                  <span className="text-sky-500 font-medium truncate">
+                    {alt.altApp.name}
+                  </span>
+                </div>
+                <span className="text-xs text-gray-500 shrink-0 ml-3">
+                  {alt.upvotes} 票
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 最近登録されたアプリ */}
+      {recentApps.length > 0 && (
+        <section className="mt-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">
+              最近登録されたアプリ
+            </h2>
+            <Link
+              href="/apps"
+              className="text-sm text-sky-500 hover:text-sky-600 transition-colors"
+            >
+              すべて見る →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {recentApps.map((app) => (
+              <Link
+                key={app.id}
+                href={`/apps/${app.slug}`}
+                className="border border-gray-200 rounded-lg px-4 py-3 hover:bg-sky-50 transition-colors"
+              >
+                <p className="text-sm font-medium text-gray-900">{app.name}</p>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {app.description}
+                </p>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {app.isJpSupport && (
+                    <span className="text-xs bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded">
+                      日本語対応
+                    </span>
+                  )}
+                  {app.pricingType && (
+                    <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                      {app.pricingType}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* カテゴリーセクション */}
       <section className="mt-12">

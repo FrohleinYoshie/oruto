@@ -200,8 +200,9 @@ function checkUrlSafety(parsed: URL): { warning?: string } {
  * 現在はスタブ実装（常にsafe）
  */
 export async function checkUrlSafetyAsync(
-  _url: string
+  url: string
 ): Promise<{ safe: boolean; reason?: string }> {
+  void url;
   // TODO: 収益化時にGoogle Web Risk APIに差し替え
   // https://cloud.google.com/web-risk/docs/lookup-api
   return { safe: true };
@@ -257,8 +258,7 @@ function checkHomograph(hostname: string): { error?: string } {
   }
 
   // ASCII範囲外の文字チェック（ブラウザがPunycodeに変換しない場合の対策）
-  // eslint-disable-next-line no-control-regex
-  if (/[^\x00-\x7F]/.test(hostname)) {
+  if (/[^\u0000-\u007F]/.test(hostname)) {
     return {
       error:
         "ドメイン名に非ASCII文字が含まれています。ホモグラフ攻撃の可能性があるため登録できません。",

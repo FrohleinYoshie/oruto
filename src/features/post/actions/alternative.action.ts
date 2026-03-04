@@ -130,6 +130,7 @@ export async function PostAlternative(
   let altAppId = formData.get("altAppId") as string | null;
   const isNewTarget = formData.get("isNewTarget") === "true";
   const isNewAlt = formData.get("isNewAlt") === "true";
+  let targetAppSlug: string | null = null;
 
   try {
     // 新規対象アプリの登録
@@ -218,6 +219,8 @@ export async function PostAlternative(
       return { error: "代替アプリが見つかりません。" };
     }
 
+    targetAppSlug = targetApp.slug;
+
     // 重複チェック
     const existingAlt = await prisma.alternative.findUnique({
       where: {
@@ -247,5 +250,5 @@ export async function PostAlternative(
   revalidatePath("/apps", "layout");
   revalidatePath("/", "layout");
 
-  return { error: null, warnings, success: true, redirectTo: `/apps/${targetApp!.slug}` };
+  return { error: null, warnings, success: true, redirectTo: `/apps/${targetAppSlug}` };
 }

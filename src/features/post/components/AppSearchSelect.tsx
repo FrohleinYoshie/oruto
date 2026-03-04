@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { searchApps } from "@/features/post/actions/search-apps.action";
 import type { AppDTO } from "@/types/app";
 
@@ -30,32 +30,37 @@ export default function AppSearchSelect({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // デバウンス付き検索
-  useEffect(() => {
-    if (query.length < 1) {
-      setResults([]);
-      setIsOpen(false);
-      return;
-    }
+  // デバウンス付き検索（onChangeハンドラ内で制御）
+  const handleQueryChange = useCallback((value: string) => {
+    setQuery(value);
 
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
 
+    if (value.length < 1) {
+      setResults([]);
+      setIsOpen(false);
+      return;
+    }
+
     timerRef.current = setTimeout(async () => {
       setIsSearching(true);
-      const { apps } = await searchApps(query);
+      const { apps } = await searchApps(value);
       setResults(apps);
       setIsOpen(true);
       setIsSearching(false);
     }, 300);
+  }, []);
 
+  // タイマーのクリーンアップ
+  useEffect(() => {
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
     };
-  }, [query]);
+  }, []);
 
   // 外側クリックでドロップダウンを閉じる
   useEffect(() => {
@@ -103,7 +108,7 @@ export default function AppSearchSelect({
       <input
         type="text"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => handleQueryChange(e.target.value)}
         onFocus={() => {
           if (results.length > 0) setIsOpen(true);
         }}
