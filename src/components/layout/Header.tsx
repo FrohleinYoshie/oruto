@@ -24,6 +24,9 @@ export default async function Header() {
             <Link href="/apps" className="text-gray-700 hover:text-sky-500 transition-colors">
               アプリ一覧
             </Link>
+            <Link href="/consultations" className="text-gray-700 hover:text-sky-500 transition-colors">
+              相談
+            </Link>
           </div>
         </div>
         <nav aria-label="メインナビゲーション">

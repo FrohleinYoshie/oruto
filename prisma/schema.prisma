@@ -16,7 +16,8 @@ model Category {
   iconName  String?  @map("icon_name") // lucide-reactのアイコン名
   createdAt DateTime @default(now()) @map("created_at")
 
-  apps App[]
+  apps          App[]
+  consultations Consultation[]
 
   @@map("categories")
 }
@@ -38,6 +39,8 @@ model App {
   category            Category      @relation(fields: [categoryId], references: [id])
   targetAlternatives  Alternative[] @relation("TargetApp")  // このアプリの代替一覧
   altAlternatives     Alternative[] @relation("AltApp")     // このアプリが代替として登録されている一覧
+  consultations       Consultation[]          // このアプリに関する相談
+  consultationReplies ConsultationReply[]     // このアプリが提案された回答
 
   @@map("apps")
 }
@@ -96,4 +99,53 @@ model CommentVoteLog {
   comment AlternativeComment @relation(fields: [commentId], references: [id])
 
   @@map("comment_votes_log")
+}
+
+/// 相談（「○○の代わりを教えて」という相談投稿）
+model Consultation {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid          // 投稿者（ログイン必須）
+  appName     String   @map("app_name")                   // 対象アプリ名（自由テキスト、DB未登録でもOK）
+  targetAppId String?  @map("target_app_id") @db.Uuid     // 既存アプリへのリンク（任意）
+  categoryId  String?  @map("category_id") @db.Uuid       // カテゴリ（フィルタリング用、任意）
+  title       String                                       // 相談タイトル
+  body        String                                       // 困りごとの詳細
+  status      String   @default("open")                    // "open" | "resolved"
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  targetApp App?                @relation(fields: [targetAppId], references: [id])
+  category  Category?           @relation(fields: [categoryId], references: [id])
+  replies   ConsultationReply[]
+
+  @@map("consultations")
+}
+
+/// 相談への回答（代替アプリの提案）
+model ConsultationReply {
+  id             String   @id @default(uuid()) @db.Uuid
+  consultationId String   @map("consultation_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid         // 回答者（ログイン必須）
+  suggestedAppId String   @map("suggested_app_id") @db.Uuid // 提案するアプリ（DB登録済み）
+  body           String                                      // 推薦理由
+  upvotes        Int      @default(0)                        // 投票数（非正規化）
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  consultation Consultation              @relation(fields: [consultationId], references: [id])
+  suggestedApp App                       @relation(fields: [suggestedAppId], references: [id])
+  voteLogs     ConsultationReplyVoteLog[]
+
+  @@unique([consultationId, suggestedAppId]) // 同じ相談に同じアプリは1回だけ
+  @@map("consultation_replies")
+}
+
+/// 相談回答への投票ログ（不正防止用）
+model ConsultationReplyVoteLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  replyId          String   @map("reply_id") @db.Uuid
+  clientIdentifier String   @map("client_identifier")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  reply ConsultationReply @relation(fields: [replyId], references: [id])
+
+  @@map("consultation_reply_votes_log")
 }

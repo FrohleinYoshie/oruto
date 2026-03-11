@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function SearchInput() {
-  const [query, setQuery] = useState("");
+export default function SearchInput({ defaultValue = "" }: { defaultValue?: string }) {
+  const [query, setQuery] = useState(defaultValue);
   const router = useRouter();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {

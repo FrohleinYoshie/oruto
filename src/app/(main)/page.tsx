@@ -6,12 +6,14 @@ import CategoryList from "@/features/category/components/CategoryList";
 import { CategoriesData } from "@/features/category/queries/categories.query";
 import { TrendingAlternativesData } from "@/features/alternative/queries/trending.query";
 import { RecentToolsData } from "@/features/tool/queries/recent-tools.query";
+import { RecentConsultationsData } from "@/features/consultation/queries/consultation.query";
 
 export default async function Home() {
-  const [categories, trending, recentApps, supabase] = await Promise.all([
+  const [categories, trending, recentApps, recentConsultations, supabase] = await Promise.all([
     CategoriesData(),
     TrendingAlternativesData(5),
     RecentToolsData(6),
+    RecentConsultationsData(3),
     createClient(),
   ]);
 
@@ -109,6 +111,51 @@ export default async function Home() {
                     </span>
                   )}
                 </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 最新の相談 */}
+      {recentConsultations.length > 0 && (
+        <section className="mt-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">
+              みんなの相談
+            </h2>
+            <Link
+              href="/consultations"
+              className="text-sm text-sky-500 hover:text-sky-600 transition-colors"
+            >
+              すべて見る →
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {recentConsultations.map((c) => (
+              <Link
+                key={c.id}
+                href={`/consultations/${c.id}`}
+                className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 hover:bg-sky-50 transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                    {c.title}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">
+                      {c.appName}
+                    </span>
+                    {c.categoryName && (
+                      <span className="text-xs text-gray-500">
+                        {c.categoryName}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <span className="text-xs text-gray-500 shrink-0 ml-3">
+                  {c.replyCount} 件の回答
+                </span>
               </Link>
             ))}
           </div>

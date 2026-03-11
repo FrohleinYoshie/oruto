@@ -9,10 +9,11 @@ interface Props {
     currentPage: number,
     baseUrl: string,
     firstPageUrl?: string  // ページ1のURL（省略時は /${baseUrl}1）
+    queryString?: string   // リンクに付与するクエリ文字列（例: "?q=notion"）
 }
 
-export default function Pagination({ numApps, limit, currentPage, baseUrl, firstPageUrl }: Props) {
-    const page1Url = firstPageUrl ?? `/${baseUrl}1`
+export default function Pagination({ numApps, limit, currentPage, baseUrl, firstPageUrl, queryString = "" }: Props) {
+    const page1Url = `${firstPageUrl ?? `/${baseUrl}1`}${queryString}`
     const totalPages = Math.ceil(numApps / limit)
 
     // 1ページ以下なら表示しない
@@ -26,7 +27,7 @@ export default function Pagination({ numApps, limit, currentPage, baseUrl, first
     }
 
     function pageUrl(page: number) {
-        return page === 1 ? page1Url : `/${baseUrl}${page}`
+        return page === 1 ? page1Url : `/${baseUrl}${page}${queryString}`
     }
 
     // 表示するページ番号の範囲を計算
