@@ -119,7 +119,7 @@ export default async function Home() {
 
       {/* 最新の相談 */}
       {recentConsultations.length > 0 && (
-        <section className="mt-12">
+        <section className="mt-12 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">
               みんなの相談
