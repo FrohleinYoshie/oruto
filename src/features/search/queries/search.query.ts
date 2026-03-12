@@ -2,46 +2,23 @@ import { prisma } from "@/lib/prisma";
 import { toAppDTO } from "@/utils/transform";
 import type { AppDTO } from "@/types/app";
 
-/** クエリ文字列を正規化（前後空白除去 + 連続スペースを1つに） */
 function normalizeQuery(query: string): string {
   return query.trim().replace(/\s+/g, " ");
 }
 
-/** アプリ名で検索（大文字小文字を区別しない） */
-export async function SearchAppsData(
+export async function SearchApps(
   query: string,
   limit: number,
   page: number
-): Promise<AppDTO[]> {
+): Promise<{ apps: AppDTO[]; total: number }> {
   const normalized = normalizeQuery(query);
-  if (!normalized) return [];
+  if (!normalized) return { apps: [], total: 0 };
 
-  const apps = await prisma.app.findMany({
-    where: {
-      name: {
-        contains: normalized,
-        mode: "insensitive",
-      },
-    },
-    orderBy: { name: "asc" },
-    skip: (page - 1) * limit,
-    take: limit,
-  });
+  const where = { name: { contains: normalized, mode: "insensitive" as const } };
+  const [apps, total] = await Promise.all([
+    prisma.app.findMany({ where, orderBy: { name: "asc" }, skip: (page - 1) * limit, take: limit }),
+    prisma.app.count({ where }),
+  ]);
 
-  return apps.map(toAppDTO);
-}
-
-/** 検索結果の総件数を取得 */
-export async function SearchAppsCount(query: string): Promise<number> {
-  const normalized = normalizeQuery(query);
-  if (!normalized) return 0;
-
-  return prisma.app.count({
-    where: {
-      name: {
-        contains: normalized,
-        mode: "insensitive",
-      },
-    },
-  });
+  return { apps: apps.map(toAppDTO), total };
 }

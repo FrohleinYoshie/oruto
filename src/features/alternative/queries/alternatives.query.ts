@@ -26,6 +26,7 @@ export async function AlternativesWithCommentsData(targetAppSlug: string) {
 
 // クライアントが投票済みの代替アプリID・コメントIDを取得
 export async function VotedIdsData(alternativeIds: string[], commentIds: string[], clientIdentifier: string) {
+    if (!clientIdentifier) return { votedAlternativeIds: new Set<string>(), votedCommentIds: new Set<string>() };
     const [altVotes, commentVotes] = await Promise.all([
         prisma.voteLog.findMany({
             where: {

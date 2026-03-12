@@ -1,18 +1,12 @@
+import { createHash } from "crypto";
 import type { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
 
-// リクエストヘッダーからクライアント識別子を取得する
-// x-forwarded-for → x-real-ip の順で試し、取得できなければ null を返す
+// x-real-ip（プロキシが設定）を優先し、なければ x-forwarded-for の末尾を使用
+// SHA-256でハッシュ化してからDBに保存する（プライバシー保護）
 export function getClientIdentifier(headersList: ReadonlyHeaders): string | null {
-  const forwarded = headersList.get("x-forwarded-for");
-  if (forwarded) {
-    const ip = forwarded.split(",")[0]?.trim();
-    if (ip) return ip;
-  }
-
-  const realIp = headersList.get("x-real-ip");
-  if (realIp) {
-    return realIp.trim();
-  }
-
-  return null;
+  const ip =
+    headersList.get("x-real-ip") ??
+    headersList.get("x-forwarded-for")?.split(",").at(-1)?.trim() ??
+    null;
+  return ip ? createHash("sha256").update(ip).digest("hex") : null;
 }

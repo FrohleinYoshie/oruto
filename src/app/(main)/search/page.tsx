@@ -1,4 +1,4 @@
-import { SearchAppsData, SearchAppsCount } from "@/features/search/queries/search.query";
+import { SearchApps } from "@/features/search/queries/search.query";
 import ToolsList from "@/features/tool/components/ToolsList";
 import Pagination from "@/components/Pagination";
 import ContentWrapper from "@/components/layout/ContentWrapper";
@@ -30,10 +30,7 @@ export default async function SearchPage({ searchParams }: Props) {
     );
   }
 
-  const [apps, totalCount] = await Promise.all([
-    SearchAppsData(query, LIMIT, 1),
-    SearchAppsCount(query),
-  ]);
+  const { apps, total: totalCount } = await SearchApps(query, LIMIT, 1);
 
   const queryString = `?q=${encodeURIComponent(query)}`;
 
