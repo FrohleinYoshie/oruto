@@ -17,7 +17,8 @@ export default function CommentCard({ comment, hasVoted }: Props) {
 
     const [state, formAction, isPending] = useActionState(
         async (_prev: { error: string | null }, formData: FormData) => {
-            if (voted) {
+            const wasVoted = voted;
+            if (wasVoted) {
                 setVoted(false);
                 setDisplayVotes((v) => v - 1);
             } else {
@@ -26,8 +27,9 @@ export default function CommentCard({ comment, hasVoted }: Props) {
             }
             const result = await voteComment(formData);
             if (result.error) {
-                setVoted(voted);
-                setDisplayVotes(comment.upvotes);
+                // ロールバック: 楽観的更新を反転
+                setVoted(wasVoted);
+                setDisplayVotes((v) => wasVoted ? v + 1 : v - 1);
             }
             return result;
         },

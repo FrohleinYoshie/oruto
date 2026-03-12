@@ -18,7 +18,6 @@ export default async function NewConsultationPage() {
     return (
         <ContentWrapper>
             <ConsultationForm
-                isLoggedIn={!!user}
                 categories={categories}
             />
         </ContentWrapper>

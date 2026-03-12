@@ -5,10 +5,7 @@ import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-
-function sanitizeText(input: string): string {
-    return input.replace(/<[^>]*>/g, "").trim();
-}
+import { sanitizeText } from "@/utils/sanitize";
 
 const replySchema = z.object({
     consultationId: z.string().uuid("不正な相談IDです。"),

@@ -6,29 +6,9 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { validateUrl } from "@/features/post/utils/url-validation";
-
-// HTMLタグ除去
-function sanitizeText(input: string): string {
-  return input.replace(/<[^>]*>/g, "").trim();
-}
-
-// slug生成
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[\s　]+/g, "-")
-    .replace(/[^a-z0-9\-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-const VALID_PLATFORMS = [
-  "Web", "iOS", "Android", "Windows", "Mac", "Linux",
-  "Chrome Extension", "Firefox Extension", "Edge Extension", "Safari Extension", "Other",
-] as const;
-
-const VALID_PRICING_TYPES = ["無料", "無料プランあり", "有料", "その他"] as const;
+import { sanitizeText } from "@/utils/sanitize";
+import { generateSlug } from "@/utils/slug";
+import { VALID_PLATFORMS, VALID_PRICING_TYPES } from "@/utils/constants";
 
 // 既存アプリ同士の代替提案スキーマ
 const alternativeSchema = z.object({

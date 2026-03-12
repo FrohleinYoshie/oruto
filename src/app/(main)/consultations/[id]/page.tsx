@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { getClientIdentifier } from "@/utils/client-identifier";
 import {
     ConsultationDetailData,
     ConsultationRepliesData,
@@ -18,6 +20,11 @@ interface Props {
 export default async function ConsultationDetailPage({ params }: Props) {
     const { id } = await params;
 
+    // UUID形式の検証
+    if (!z.string().uuid().safeParse(id).success) {
+        notFound();
+    }
+
     const consultation = await ConsultationDetailData(id);
     if (!consultation) {
         notFound();
@@ -32,8 +39,7 @@ export default async function ConsultationDetailPage({ params }: Props) {
     const { data: { user } } = await supabase.auth.getUser();
 
     // クライアントIPから投票済み状態を取得
-    const forwarded = headersList.get("x-forwarded-for");
-    const clientIdentifier = forwarded?.split(",")[0]?.trim() ?? "unknown";
+    const clientIdentifier = getClientIdentifier(headersList) ?? "";
 
     const replyIds = replies.map((r) => r.id);
     const votedReplyIds = await VotedReplyIdsData(replyIds, clientIdentifier);

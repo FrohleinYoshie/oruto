@@ -17,8 +17,9 @@ export default function AlternativeVoteButton({ alternativeId, upvotes, hasVoted
 
     const [state, formAction, isPending] = useActionState(
         async (_prev: { error: string | null }, formData: FormData) => {
+            const wasVoted = voted;
             // Optimistic UI
-            if (voted) {
+            if (wasVoted) {
                 setVoted(false);
                 setDisplayVotes((v) => v - 1);
             } else {
@@ -27,9 +28,9 @@ export default function AlternativeVoteButton({ alternativeId, upvotes, hasVoted
             }
             const result = await voteAlternative(formData);
             if (result.error) {
-                // ロールバック
-                setVoted(voted);
-                setDisplayVotes(upvotes);
+                // ロールバック: 楽観的更新を反転
+                setVoted(wasVoted);
+                setDisplayVotes((v) => wasVoted ? v + 1 : v - 1);
             }
             return result;
         },

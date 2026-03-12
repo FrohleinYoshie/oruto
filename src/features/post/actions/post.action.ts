@@ -6,43 +6,9 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { validateUrl } from "@/features/post/utils/url-validation";
-
-// HTMLタグを除去するサニタイズ関数
-function sanitizeText(input: string): string {
-  return input.replace(/<[^>]*>/g, "").trim();
-}
-
-// slug生成: 小文字化、スペースをハイフンに、特殊文字除去
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[\s　]+/g, "-") // 全角・半角スペースをハイフンに
-    .replace(/[^a-z0-9\-]/g, "") // 英数字とハイフン以外を除去
-    .replace(/-+/g, "-") // 連続ハイフンを1つに
-    .replace(/^-|-$/g, ""); // 先頭・末尾のハイフンを除去
-}
-
-const VALID_PLATFORMS = [
-  "Web",
-  "iOS",
-  "Android",
-  "Windows",
-  "Mac",
-  "Linux",
-  "Chrome Extension",
-  "Firefox Extension",
-  "Edge Extension",
-  "Safari Extension",
-  "Other",
-] as const;
-
-const VALID_PRICING_TYPES = [
-  "無料",
-  "無料プランあり",
-  "有料",
-  "その他",
-] as const;
+import { sanitizeText } from "@/utils/sanitize";
+import { generateSlug } from "@/utils/slug";
+import { VALID_PLATFORMS, VALID_PRICING_TYPES } from "@/utils/constants";
 
 // zodバリデーションスキーマ
 const postAppSchema = z.object({

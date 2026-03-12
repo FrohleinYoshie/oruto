@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
+import { getClientIdentifier } from "@/utils/client-identifier";
 
 const voteSchema = z.object({
     commentId: z.string().uuid("不正なIDです。"),
@@ -21,44 +22,42 @@ export async function voteComment(formData: FormData) {
     }
 
     const headersList = await headers();
-    const forwarded = headersList.get("x-forwarded-for");
-    const clientIdentifier = forwarded?.split(",")[0]?.trim() ?? "unknown";
-
-    // 既にいいね済みか確認
-    const existing = await prisma.commentVoteLog.findFirst({
-        where: {
-            commentId: result.data.commentId,
-            clientIdentifier,
-        },
-    });
+    const clientIdentifier = getClientIdentifier(headersList);
+    if (!clientIdentifier) {
+        return { error: "クライアント識別子を取得できませんでした。" };
+    }
 
     try {
-        if (existing) {
-            // いいね取り消し
-            await prisma.$transaction([
-                prisma.commentVoteLog.delete({
-                    where: { id: existing.id },
-                }),
-                prisma.alternativeComment.update({
+        await prisma.$transaction(async (tx) => {
+            // 既にいいね済みか確認（トランザクション内）
+            const existing = await tx.commentVoteLog.findFirst({
+                where: {
+                    commentId: result.data.commentId,
+                    clientIdentifier,
+                },
+            });
+
+            if (existing) {
+                // いいね取り消し
+                await tx.commentVoteLog.delete({ where: { id: existing.id } });
+                await tx.alternativeComment.update({
                     where: { id: result.data.commentId },
                     data: { upvotes: { decrement: 1 } },
-                }),
-            ]);
-        } else {
-            // いいね追加
-            await prisma.$transaction([
-                prisma.commentVoteLog.create({
+                });
+            } else {
+                // いいね追加
+                await tx.commentVoteLog.create({
                     data: {
                         commentId: result.data.commentId,
                         clientIdentifier,
                     },
-                }),
-                prisma.alternativeComment.update({
+                });
+                await tx.alternativeComment.update({
                     where: { id: result.data.commentId },
                     data: { upvotes: { increment: 1 } },
-                }),
-            ]);
-        }
+                });
+            }
+        });
     } catch (error) {
         console.error("Comment vote error:", error);
         return { error: "いいねに失敗しました。" };

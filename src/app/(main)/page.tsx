@@ -39,7 +39,15 @@ export default async function Home() {
 
       {/* カテゴリーセクション */}
       <section className="mt-12">
-        <h2 className="text-xl font-bold text-gray-900">カテゴリーから探す</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">カテゴリーから探す</h2>
+          <Link
+            href="/categories"
+            className="text-sm text-sky-500 hover:text-sky-600 transition-colors"
+          >
+            すべて見る →
+          </Link>
+        </div>
         <CategoryList categories={categories} />
       </section>
 

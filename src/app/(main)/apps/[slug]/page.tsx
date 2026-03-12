@@ -7,6 +7,7 @@ import { AlternativesWithCommentsData, VotedIdsData } from "@/features/alternati
 import AlternativesList from "@/features/alternative/components/AlternativesList"
 import ContentWrapper from "@/components/layout/ContentWrapper"
 import { createClient } from "@/lib/supabase/server"
+import { getClientIdentifier } from "@/utils/client-identifier"
 
 interface Props {
     params: Promise<{ slug: string }>
@@ -28,8 +29,7 @@ export default async function Page({ params }: Props) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // クライアントIPから投票済み状態を取得
-    const forwarded = headersList.get("x-forwarded-for")
-    const clientIdentifier = forwarded?.split(",")[0]?.trim() ?? "unknown"
+    const clientIdentifier = getClientIdentifier(headersList) ?? ""
 
     const alternativeIds = alternatives.map((a) => a.id)
     const commentIds = alternatives.flatMap((a) => a.comments.map((c: { id: string }) => c.id))

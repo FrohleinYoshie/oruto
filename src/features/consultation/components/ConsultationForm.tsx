@@ -1,22 +1,17 @@
 "use client";
 
 import { useActionState } from "react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createConsultation } from "@/features/consultation/actions/create-consultation.action";
 import type { ConsultationActionState } from "@/features/consultation/actions/create-consultation.action";
 import type { CategoryDTO } from "@/types/category";
 import AppNameInput from "./AppNameInput";
 
 interface Props {
-    isLoggedIn: boolean;
     categories: CategoryDTO[];
 }
 
-export default function ConsultationForm({ isLoggedIn, categories }: Props) {
-    if (!isLoggedIn) {
-        redirect("/signup");
-    }
-
+export default function ConsultationForm({ categories }: Props) {
     const router = useRouter();
 
     const [state, formAction, isPending] = useActionState(

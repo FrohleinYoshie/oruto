@@ -71,6 +71,7 @@ model VoteLog {
 
   alternative Alternative @relation(fields: [alternativeId], references: [id])
 
+  @@unique([alternativeId, clientIdentifier])
   @@map("votes_log")
 }
 
@@ -98,6 +99,7 @@ model CommentVoteLog {
 
   comment AlternativeComment @relation(fields: [commentId], references: [id])
 
+  @@unique([commentId, clientIdentifier])
   @@map("comment_votes_log")
 }
 
@@ -147,5 +149,6 @@ model ConsultationReplyVoteLog {
 
   reply ConsultationReply @relation(fields: [replyId], references: [id])
 
+  @@unique([replyId, clientIdentifier])
   @@map("consultation_reply_votes_log")
 }

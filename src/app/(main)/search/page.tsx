@@ -4,6 +4,7 @@ import Pagination from "@/components/Pagination";
 import ContentWrapper from "@/components/layout/ContentWrapper";
 import SearchInput from "@/features/search/components/SearchInput";
 import Link from "next/link";
+import { sanitizeText } from "@/utils/sanitize";
 
 interface Props {
   searchParams: Promise<{ q?: string }>;
@@ -43,7 +44,7 @@ export default async function SearchPage({ searchParams }: Props) {
       </div>
 
       <p className="text-sm text-gray-500 mb-4">
-        「{query}」の検索結果: {totalCount}件
+        「{sanitizeText(query)}」の検索結果: {totalCount}件
       </p>
 
       {apps.length > 0 ? (

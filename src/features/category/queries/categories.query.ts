@@ -15,7 +15,7 @@ export async function CategoriesData() {
 // 全カテゴリーを名前順で取得
 export async function AllCategoriesData() {
     const rawCategories = await prisma.category.findMany({
-        orderBy: { createdAt: "desc" }
+        orderBy: { name: "asc" }
     });
     return rawCategories.map(toCategoryDTO);
 }

@@ -5,11 +5,7 @@ import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-
-// HTMLタグ除去
-function sanitizeText(input: string): string {
-    return input.replace(/<[^>]*>/g, "").trim();
-}
+import { sanitizeText } from "@/utils/sanitize";
 
 const consultationSchema = z.object({
     appName: z.string().min(1, "アプリ名を入力してください。").max(100, "アプリ名は100文字以内"),
